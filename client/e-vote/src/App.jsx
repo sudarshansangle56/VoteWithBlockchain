@@ -1,9 +1,12 @@
 import './App.css'
+import Navbar from './components/Navbar';
+import Dashborad from './pages/Dashborad';
 
 function App() {
   return (
-    <div className="text-5xl font-bold underline text-blue-600">
-      Hello Tailwind + Vite!
+    <div className="bg-red-100">
+      <Navbar/>
+      <Dashborad/>
     </div>
   );
 }
