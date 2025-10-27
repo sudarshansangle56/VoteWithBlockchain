@@ -6,6 +6,9 @@ import Home from './pages/Home'
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Register from './pages/Register';
 import Login from './pages/Login';
+import VerifyIdentityVote from './pages/VerifyIdentityVote';
+import AdminAddPartyCandidate from './pages/AdminAddPartyCandidate';
+import AdminPanel from './pages/AdminPanel';
 
 function App() {
   return (
@@ -20,6 +23,9 @@ function App() {
           <Route path='/Register' element={<Register/>}/>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/Login" element={<Login />} />
+          <Route path="/vote" element={<VerifyIdentityVote />} />
+          <Route path="/add"  element={<AdminAddPartyCandidate/>}/>
+          <Route path="/admin" element={<AdminPanel/>}/>
         </Routes>
       </div>
     </Router>

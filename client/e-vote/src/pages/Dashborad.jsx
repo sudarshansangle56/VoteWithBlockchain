@@ -1,110 +1,257 @@
-import React from "react";
-import { FaUsers, FaVoteYea, FaCheckCircle } from "react-icons/fa";
-import { MdHowToVote } from "react-icons/md";
+import React, { useState } from 'react';
+import { Users, Shield, Lock, FileText, Vote, CheckCircle, Download, Clock, Activity, Fingerprint, Database, Award } from 'lucide-react';
 
-function Dashboard() {
+// Modern glassmorphism card component
+const GlassCard = ({ children, className = "" }) => (
+  <div className={`bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100 ${className}`}>
+    {children}
+  </div>
+);
+
+// Animated stat card with modern gradient
+const StatCard = ({ icon, title, value, color, subtitle }) => {
+  const gradients = {
+    blue: "from-blue-500 to-cyan-500",
+    green: "from-green-500 to-emerald-500",
+    purple: "from-purple-500 to-pink-500",
+    orange: "from-orange-500 to-amber-500"
+  };
+
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
-      <aside className="w-64 bg-blue-700 text-white flex flex-col p-6">
-        <h1 className="text-2xl font-bold mb-8">E-Voting</h1>
-        <nav className="flex flex-col gap-4">
-          <a href="#" className="hover:bg-blue-600 px-3 py-2 rounded-lg">
-            Dashboard
-          </a>
-          <a href="#" className="hover:bg-blue-600 px-3 py-2 rounded-lg">
-            Elections
-          </a>
-          <a href="#" className="hover:bg-blue-600 px-3 py-2 rounded-lg">
-            Voters
-          </a>
-          <a href="#" className="hover:bg-blue-600 px-3 py-2 rounded-lg">
-            Results
-          </a>
-          <a href="#" className="hover:bg-blue-600 px-3 py-2 rounded-lg">
-            Settings
-          </a>
-        </nav>
-      </aside>
+    <GlassCard className="p-6 hover:scale-105 transition-all duration-300 cursor-pointer group">
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${gradients[color]} p-3 mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
+            {icon}
+          </div>
+          <h4 className="text-gray-500 text-sm font-medium mb-1">{title}</h4>
+          <p className="text-2xl font-bold text-gray-800 mb-1">{value}</p>
+          {subtitle && <p className="text-xs text-gray-400">{subtitle}</p>}
+        </div>
+      </div>
+    </GlassCard>
+  );
+};
 
-      {/* Main Content */}
-      <main className="flex-1 p-8">
-        {/* Top Header */}
-        <header className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold">Dashboard</h2>
-          <button className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
-            Logout
-          </button>
-        </header>
+// Modern info row with icons
+const ModernInfoRow = ({ icon, label, value, verified }) => (
+  <div className="flex items-center justify-between py-4 px-4 rounded-xl hover:bg-gray-50 transition-colors group">
+    <div className="flex items-center space-x-3">
+      <div className="text-gray-400 group-hover:text-blue-500 transition-colors">
+        {icon}
+      </div>
+      <span className="text-gray-600 font-medium">{label}</span>
+    </div>
+    <div className="flex items-center space-x-2">
+      <span className="text-gray-800 font-semibold">{value}</span>
+      {verified && (
+        <CheckCircle className="h-5 w-5 text-green-500" />
+      )}
+    </div>
+  </div>
+);
 
-        {/* Stats Cards */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <div className="bg-white p-6 rounded-xl shadow-md flex items-center gap-4">
-            <FaUsers className="text-4xl text-blue-600" />
-            <div>
-              <h3 className="text-lg font-semibold">Total Voters</h3>
-              <p className="text-2xl font-bold">12,340</p>
-            </div>
+// Modern action button
+const ActionButton = ({ icon, text, onClick, variant = "primary", disabled }) => {
+  const variants = {
+    primary: "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg shadow-blue-500/30",
+    success: "bg-gradient-to-r from-green-500 to-emerald-500 text-white cursor-default",
+    secondary: "bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200"
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-3 ${variants[variant]} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+    >
+      {icon}
+      <span>{text}</span>
+    </button>
+  );
+};
+
+const Dashboard = () => {
+  const [user] = useState({
+    name: "Rajesh Kumar",
+    aadhaar: "XXXX-XXXX-1234",
+    hasVoted: false,
+    voterId: "MH2024567890",
+    biometricVerified: true
+  });
+
+  const navigate = (path) => {
+    console.log(`Navigating to: ${path}`);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+            Voter Dashboard
+          </h1>
+          <p className="text-gray-600 flex items-center space-x-2">
+            <Clock className="h-4 w-4" />
+            <span>Secure voting powered by blockchain technology</span>
+          </p>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
+          <StatCard
+            icon={<Vote className="h-full w-full text-white" />}
+            title="Voting Status"
+            value={user?.hasVoted ? "Completed" : "Pending"}
+            subtitle={user?.hasVoted ? "Vote recorded" : "Ready to vote"}
+            color="blue"
+          />
+          <StatCard
+            icon={<Fingerprint className="h-full w-full text-white" />}
+            title="Biometric Auth"
+            value="Verified"
+            subtitle="Face + Fingerprint"
+            color="green"
+          />
+          <StatCard
+            icon={<Database className="h-full w-full text-white" />}
+            title="Blockchain"
+            value="Synced"
+            subtitle="Fog node active"
+            color="purple"
+          />
+          <StatCard
+            icon={<Activity className="h-full w-full text-white" />}
+            title="Network Status"
+            value="Online"
+            subtitle="Low latency"
+            color="orange"
+          />
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Voter Information Card */}
+          <div className="lg:col-span-2">
+            <GlassCard className="p-8">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 p-2">
+                  <FileText className="h-full w-full text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-800">Your Profile</h3>
+              </div>
+              
+              <div className="space-y-1">
+                <ModernInfoRow 
+                  icon={<Users className="h-5 w-5" />}
+                  label="Full Name" 
+                  value={user?.name}
+                  verified={true}
+                />
+                <ModernInfoRow 
+                  icon={<Shield className="h-5 w-5" />}
+                  label="Aadhaar Number" 
+                  value={user?.aadhaar}
+                  verified={true}
+                />
+                <ModernInfoRow 
+                  icon={<Award className="h-5 w-5" />}
+                  label="Voter ID" 
+                  value={user?.voterId}
+                  verified={true}
+                />
+                <ModernInfoRow 
+                  icon={<Fingerprint className="h-5 w-5" />}
+                  label="Biometric Status" 
+                  value="Authenticated"
+                  verified={true}
+                />
+                <ModernInfoRow 
+                  icon={<Vote className="h-5 w-5" />}
+                  label="Voting Rights" 
+                  value={user?.hasVoted ? "Exercised" : "Active"}
+                  verified={!user?.hasVoted}
+                />
+              </div>
+
+              {/* Security Badge */}
+              <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
+                <div className="flex items-center space-x-3">
+                  <Lock className="h-6 w-6 text-green-600" />
+                  <div>
+                    <p className="text-sm font-semibold text-green-900">Blockchain Secured</p>
+                    <p className="text-xs text-green-600">Your vote is encrypted and immutable</p>
+                  </div>
+                </div>
+              </div>
+            </GlassCard>
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-md flex items-center gap-4">
-            <MdHowToVote className="text-4xl text-green-600" />
-            <div>
-              <h3 className="text-lg font-semibold">Active Elections</h3>
-              <p className="text-2xl font-bold">3</p>
-            </div>
-          </div>
+          {/* Actions Card */}
+          <div className="lg:col-span-1">
+            <GlassCard className="p-6">
+              <h3 className="text-xl font-bold text-gray-800 mb-6">Quick Actions</h3>
+              
+              <div className="space-y-4">
+                {!user?.hasVoted ? (
+                  <ActionButton
+                    icon={<Vote className="h-5 w-5" />}
+                    text="Cast Your Vote"
+                    onClick={() => navigate("vote")}
+                    variant="primary"
+                  />
+                ) : (
+                  <ActionButton
+                    icon={<CheckCircle className="h-5 w-5" />}
+                    text="Vote Recorded"
+                    variant="success"
+                    disabled
+                  />
+                )}
+                
+                <ActionButton
+                  icon={<Activity className="h-5 w-5" />}
+                  text="Transaction History"
+                  onClick={() => navigate("history")}
+                  variant="secondary"
+                />
+                
+                <ActionButton
+                  icon={<Download className="h-5 w-5" />}
+                  text="Download Voter Card"
+                  onClick={() => navigate("download")}
+                  variant="secondary"
+                />
+              </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-md flex items-center gap-4">
-            <FaCheckCircle className="text-4xl text-purple-600" />
-            <div>
-              <h3 className="text-lg font-semibold">Completed</h3>
-              <p className="text-2xl font-bold">15</p>
-            </div>
+              {/* System Info */}
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <p className="text-xs text-gray-500 mb-3 font-medium">SYSTEM STATUS</p>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-600">Fog Node</span>
+                    <span className="flex items-center space-x-1">
+                      <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                      <span className="text-green-600 font-medium">Active</span>
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-600">Latency</span>
+                    <span className="text-gray-800 font-medium">12ms</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-600">Block Height</span>
+                    <span className="text-gray-800 font-medium">#45,892</span>
+                  </div>
+                </div>
+              </div>
+            </GlassCard>
           </div>
-        </section>
-
-        {/* Elections List */}
-        <section>
-          <h3 className="text-2xl font-semibold mb-4">Ongoing Elections</h3>
-          <div className="bg-white rounded-xl shadow-md overflow-hidden">
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-gray-200">
-                <tr>
-                  <th className="p-3">Election Name</th>
-                  <th className="p-3">Start Date</th>
-                  <th className="p-3">End Date</th>
-                  <th className="p-3 text-center">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-t">
-                  <td className="p-3">Lok Sabha Elections</td>
-                  <td className="p-3">20 Sept 2025</td>
-                  <td className="p-3">25 Sept 2025</td>
-                  <td className="p-3 text-center">
-                    <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                      Vote
-                    </button>
-                  </td>
-                </tr>
-                <tr className="border-t">
-                  <td className="p-3">State Assembly</td>
-                  <td className="p-3">22 Sept 2025</td>
-                  <td className="p-3">28 Sept 2025</td>
-                  <td className="p-3 text-center">
-                    <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                      View Results
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </main>
+        </div>
+      </div>
     </div>
   );
-}
+};
 
 export default Dashboard;
