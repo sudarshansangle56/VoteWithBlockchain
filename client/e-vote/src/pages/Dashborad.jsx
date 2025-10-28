@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, Shield, Lock, FileText, Vote, CheckCircle, Download, Clock, Activity, Fingerprint, Database, Award } from 'lucide-react';
+import { Link } from "react-router-dom";
+import axios from "axios";
 
-// Modern glassmorphism card component
 const GlassCard = ({ children, className = "" }) => (
   <div className={`bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100 ${className}`}>
     {children}
   </div>
 );
 
-// Animated stat card with modern gradient
 const StatCard = ({ icon, title, value, color, subtitle }) => {
   const gradients = {
     blue: "from-blue-500 to-cyan-500",
@@ -44,9 +44,7 @@ const ModernInfoRow = ({ icon, label, value, verified }) => (
     </div>
     <div className="flex items-center space-x-2">
       <span className="text-gray-800 font-semibold">{value}</span>
-      {verified && (
-        <CheckCircle className="h-5 w-5 text-green-500" />
-      )}
+      {verified && <CheckCircle className="h-5 w-5 text-green-500" />}
     </div>
   </div>
 );
@@ -72,17 +70,63 @@ const ActionButton = ({ icon, text, onClick, variant = "primary", disabled }) =>
 };
 
 const Dashboard = () => {
-  const [user] = useState({
-    name: "Rajesh Kumar",
-    aadhaar: "XXXX-XXXX-1234",
-    hasVoted: false,
-    voterId: "MH2024567890",
-    biometricVerified: true
-  });
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // ✅ Fetch voter details from backend
+  useEffect(() => {
+    const fetchVoterData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          console.error("No token found. Please login first.");
+          setLoading(false);
+          return;
+        }
+
+        const res = await axios.get("http://localhost:5000/api/voters/dashboard", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        // Set voter details
+        setUser({
+          name: res.data.name,
+          aadhaar: res.data.aadhaar,
+          hasVoted: false, // you can replace with real voting logic
+          voterId: res.data._id,
+          biometricVerified: res.data.biometricStatus === "verified",
+        });
+      } catch (error) {
+        console.error("Error fetching voter details:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVoterData();
+  }, []);
 
   const navigate = (path) => {
     console.log(`Navigating to: ${path}`);
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen text-gray-700">
+        Loading voter dashboard...
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex justify-center items-center h-screen text-red-500">
+        Failed to load voter data. Please login again.
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
@@ -110,9 +154,9 @@ const Dashboard = () => {
           <StatCard
             icon={<Fingerprint className="h-full w-full text-white" />}
             title="Biometric Auth"
-            value="Verified"
+            value={user?.biometricVerified ? "Verified" : "Not Verified"}
             subtitle="Face + Fingerprint"
-            color="green"
+            color={user?.biometricVerified ? "green" : "orange"}
           />
           <StatCard
             icon={<Database className="h-full w-full text-white" />}
@@ -130,7 +174,6 @@ const Dashboard = () => {
           />
         </div>
 
-        {/* Main Content Grid */}
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Voter Information Card */}
           <div className="lg:col-span-2">
@@ -146,13 +189,13 @@ const Dashboard = () => {
                 <ModernInfoRow 
                   icon={<Users className="h-5 w-5" />}
                   label="Full Name" 
-                  value={user?.name}
+                  value={user?.name || "N/A"}
                   verified={true}
                 />
                 <ModernInfoRow 
                   icon={<Shield className="h-5 w-5" />}
                   label="Aadhaar Number" 
-                  value={user?.aadhaar}
+                  value={user?.aadhaar || "N/A"}
                   verified={true}
                 />
                 <ModernInfoRow 
@@ -164,8 +207,8 @@ const Dashboard = () => {
                 <ModernInfoRow 
                   icon={<Fingerprint className="h-5 w-5" />}
                   label="Biometric Status" 
-                  value="Authenticated"
-                  verified={true}
+                  value={user?.biometricVerified ? "Authenticated" : "Pending"}
+                  verified={user?.biometricVerified}
                 />
                 <ModernInfoRow 
                   icon={<Vote className="h-5 w-5" />}
@@ -195,12 +238,13 @@ const Dashboard = () => {
               
               <div className="space-y-4">
                 {!user?.hasVoted ? (
-                  <ActionButton
-                    icon={<Vote className="h-5 w-5" />}
-                    text="Cast Your Vote"
-                    onClick={() => navigate("vote")}
-                    variant="primary"
-                  />
+                  <Link to="/vote">
+                    <ActionButton 
+                      icon={<Vote className="h-5 w-5" />}
+                      text="Cast Your Vote"
+                      variant="primary"
+                    />
+                  </Link>
                 ) : (
                   <ActionButton
                     icon={<CheckCircle className="h-5 w-5" />}

@@ -1,30 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import { User, Vote, CheckCircle, Fingerprint, Camera, Shield, XCircle, Award, ArrowLeft, Scan, Lock, AlertCircle } from 'lucide-react';
+import axios from 'axios';
+import {
+  Vote,
+  CheckCircle,
+  Fingerprint,
+  Camera,
+  Shield,
+  ArrowLeft,
+  Scan,
+  Lock,
+  AlertCircle,
+  Award,
+} from 'lucide-react';
 
 const VerifyIdentityVote = () => {
   const [candidates, setCandidates] = useState([]);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
-  const [aadhaar, setAadhaar] = useState("");
+  const [aadhaar, setAadhaar] = useState('');
   const [step, setStep] = useState('select'); // select, verify, success
   const [faceVerified, setFaceVerified] = useState(false);
   const [fingerprintVerified, setFingerprintVerified] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
-    const demoCandidates = [
-      { id: 1, name: "Amit Sharma", party: "National Unity Party", symbol: "🦁", votes: 0 },
-      { id: 2, name: "Priya Deshmukh", party: "People's Progress Front", symbol: "🌟", votes: 0 },
-      { id: 3, name: "Rahul Patil", party: "Green Future Party", symbol: "🌱", votes: 0 },
-      { id: 4, name: "Sneha Kulkarni", party: "Bharat Vikas Sangh", symbol: "🔥", votes: 0 },
-    ];
-    setCandidates(demoCandidates);
+    const fetchCandidates = async () => {
+      try {
+        const res = await axios.get('http://localhost:5000/api/candidates');
+        setCandidates(res.data);
+      } catch (err) {
+        console.error('Error fetching candidates:', err);
+        setMessage('⚠️ Failed to load candidates. Please try again later.');
+      }
+    };
+    fetchCandidates();
   }, []);
 
   const handleVoteClick = (candidate) => {
     setSelectedCandidate(candidate);
     setStep('verify');
-    setMessage("");
+    setMessage('');
   };
 
   const simulateBiometric = (type) => {
@@ -33,30 +48,40 @@ const VerifyIdentityVote = () => {
     setTimeout(() => {
       if (type === 'face') {
         setFaceVerified(true);
-        setMessage("✅ Face verified successfully!");
+        setMessage(' Face verified successfully!');
       } else {
         setFingerprintVerified(true);
-        setMessage("✅ Fingerprint verified successfully!");
+        setMessage('Fingerprint verified successfully!');
       }
       setIsScanning(false);
     }, 2000);
   };
 
-  const handleSubmitVote = () => {
+  const handleSubmitVote = async () => {
     if (!aadhaar || aadhaar.length !== 12) {
-      setMessage("⚠️ Please enter a valid 12-digit Aadhaar number.");
+      setMessage('Please enter a valid 12-digit Aadhaar number.');
       return;
     }
     if (!faceVerified || !fingerprintVerified) {
-      setMessage("⚠️ Please complete biometric verification.");
+      setMessage(' Please complete biometric verification.');
       return;
     }
-    
-    setMessage("🔐 Submitting your vote to blockchain...");
-    setTimeout(() => {
-      setStep('success');
-      setMessage(`Your vote has been securely recorded on the blockchain!`);
-    }, 2000);
+
+    try {
+      setMessage('Submitting your vote to blockchain...');
+      // Example: Update candidate vote count (optional future step)
+      await axios.put(`http://localhost:5000/api/candidates/${selectedCandidate._id}`, {
+        votes: selectedCandidate.votes + 1,
+      });
+
+      setTimeout(() => {
+        setStep('success');
+        setMessage('✅ Your vote has been securely recorded on the blockchain!');
+      }, 2000);
+    } catch (error) {
+      console.error('Error submitting vote:', error);
+      setMessage('⚠️ Failed to record vote. Try again.');
+    }
   };
 
   const reset = () => {
@@ -64,8 +89,8 @@ const VerifyIdentityVote = () => {
     setStep('select');
     setFaceVerified(false);
     setFingerprintVerified(false);
-    setAadhaar("");
-    setMessage("");
+    setAadhaar('');
+    setMessage('');
   };
 
   return (
@@ -90,50 +115,54 @@ const VerifyIdentityVote = () => {
 
         {/* Candidate Selection */}
         {step === 'select' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {candidates.map((candidate) => (
-              <div
-                key={candidate.id}
-                className="group relative bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl hover:scale-105 transition-all duration-300"
-              >
-                {/* Party Color Accent */}
-                <div className="h-2 bg-gradient-to-r from-blue-500 to-purple-500"></div>
-                
-                <div className="p-6">
-                  <div className="flex flex-col items-center text-center space-y-4">
-                    {/* Candidate Avatar */}
-                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center border-4 border-white shadow-lg group-hover:scale-110 transition-transform">
-                      <span className="text-4xl">{candidate.symbol}</span>
-                    </div>
-                    
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800 mb-1">{candidate.name}</h2>
-                      <p className="text-sm text-gray-600 mb-3">{candidate.party}</p>
-                      <div className="inline-flex items-center space-x-1 px-3 py-1 bg-blue-50 rounded-full">
-                        <Award className="h-4 w-4 text-blue-600" />
-                        <span className="text-xs font-semibold text-blue-600">Verified Candidate</span>
+          <>
+            {candidates.length === 0 ? (
+              <p className="text-center text-gray-500 text-lg">Loading candidates...</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                {candidates.map((candidate) => (
+                  <div
+                    key={candidate._id}
+                    className="group relative bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl hover:scale-105 transition-all duration-300"
+                  >
+                    <div className="h-2 bg-gradient-to-r from-blue-500 to-purple-500"></div>
+                    <div className="p-6">
+                      <div className="flex flex-col items-center text-center space-y-4">
+                        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center border-4 border-white shadow-lg group-hover:scale-110 transition-transform">
+                          <span className="text-4xl">🗳️</span>
+                        </div>
+
+                        <div>
+                          <h2 className="text-xl font-bold text-gray-800 mb-1">{candidate.name}</h2>
+                          <p className="text-sm text-gray-600 mb-3">{candidate.party || 'Independent'}</p>
+                          <div className="inline-flex items-center space-x-1 px-3 py-1 bg-blue-50 rounded-full">
+                            <Award className="h-4 w-4 text-blue-600" />
+                            <span className="text-xs font-semibold text-blue-600">
+                              {candidate.status === 'Approved' ? 'Verified Candidate' : 'Pending'}
+                            </span>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => handleVoteClick(candidate)}
+                          className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300 flex items-center justify-center space-x-2"
+                        >
+                          <Vote className="h-5 w-5" />
+                          <span>Vote Now</span>
+                        </button>
                       </div>
                     </div>
-
-                    <button
-                      onClick={() => handleVoteClick(candidate)}
-                      className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300 flex items-center justify-center space-x-2"
-                    >
-                      <Vote className="h-5 w-5" />
-                      <span>Vote Now</span>
-                    </button>
                   </div>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
 
         {/* Verification Step */}
         {step === 'verify' && selectedCandidate && (
           <div className="max-w-4xl mx-auto">
             <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-gray-100 p-8 md:p-12">
-              {/* Back Button */}
               <button
                 onClick={reset}
                 className="mb-6 flex items-center space-x-2 text-gray-600 hover:text-blue-600 transition-colors"
@@ -142,11 +171,10 @@ const VerifyIdentityVote = () => {
                 <span className="font-medium">Back to Candidates</span>
               </button>
 
-              {/* Selected Candidate Preview */}
               <div className="mb-8 p-6 bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl border border-blue-100">
                 <div className="flex items-center space-x-4">
                   <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center border-4 border-white shadow">
-                    <span className="text-3xl">{selectedCandidate.symbol}</span>
+                    <span className="text-3xl">🗳️</span>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 mb-1">You are voting for:</p>
@@ -164,21 +192,26 @@ const VerifyIdentityVote = () => {
                 <p className="text-gray-600">Complete all verification steps to cast your vote</p>
               </div>
 
-              {/* Biometric Verification Cards */}
+              {/* Face and Fingerprint Verification */}
               <div className="grid md:grid-cols-2 gap-6 mb-8">
-                {/* Face Verification */}
-                <div className={`p-6 rounded-2xl border-2 transition-all duration-300 ${
-                  faceVerified ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-gray-50'
-                }`}>
+                {/* Face */}
+                <div
+                  className={`p-6 rounded-2xl border-2 ${
+                    faceVerified ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-gray-50'
+                  } transition-all duration-300`}
+                >
                   <div className="text-center">
-                    <div className={`w-20 h-20 mx-auto rounded-2xl flex items-center justify-center mb-4 transition-all duration-300 ${
-                      faceVerified ? 'bg-gradient-to-br from-green-500 to-emerald-500' : 'bg-gradient-to-br from-purple-600 to-pink-600'
-                    } ${isScanning ? 'animate-pulse' : ''}`}>
+                    <div
+                      className={`w-20 h-20 mx-auto rounded-2xl flex items-center justify-center mb-4 ${
+                        faceVerified
+                          ? 'bg-gradient-to-br from-green-500 to-emerald-500'
+                          : 'bg-gradient-to-br from-purple-600 to-pink-600'
+                      } ${isScanning ? 'animate-pulse' : ''}`}
+                    >
                       <Camera className="h-10 w-10 text-white" />
                     </div>
                     <h4 className="text-lg font-bold text-gray-800 mb-2">Face Recognition</h4>
                     <p className="text-sm text-gray-600 mb-4">Position your face in camera view</p>
-                    
                     {!faceVerified ? (
                       <button
                         onClick={() => simulateBiometric('face')}
@@ -197,19 +230,24 @@ const VerifyIdentityVote = () => {
                   </div>
                 </div>
 
-                {/* Fingerprint Verification */}
-                <div className={`p-6 rounded-2xl border-2 transition-all duration-300 ${
-                  fingerprintVerified ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-gray-50'
-                }`}>
+                {/* Fingerprint */}
+                <div
+                  className={`p-6 rounded-2xl border-2 ${
+                    fingerprintVerified ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-gray-50'
+                  } transition-all duration-300`}
+                >
                   <div className="text-center">
-                    <div className={`w-20 h-20 mx-auto rounded-2xl flex items-center justify-center mb-4 transition-all duration-300 ${
-                      fingerprintVerified ? 'bg-gradient-to-br from-green-500 to-emerald-500' : 'bg-gradient-to-br from-blue-600 to-purple-600'
-                    } ${isScanning ? 'animate-pulse' : ''}`}>
+                    <div
+                      className={`w-20 h-20 mx-auto rounded-2xl flex items-center justify-center mb-4 ${
+                        fingerprintVerified
+                          ? 'bg-gradient-to-br from-green-500 to-emerald-500'
+                          : 'bg-gradient-to-br from-blue-600 to-purple-600'
+                      } ${isScanning ? 'animate-pulse' : ''}`}
+                    >
                       <Fingerprint className="h-10 w-10 text-white" />
                     </div>
                     <h4 className="text-lg font-bold text-gray-800 mb-2">Fingerprint Scan</h4>
                     <p className="text-sm text-gray-600 mb-4">Place finger on scanner</p>
-                    
                     {!fingerprintVerified ? (
                       <button
                         onClick={() => simulateBiometric('fingerprint')}
@@ -245,23 +283,29 @@ const VerifyIdentityVote = () => {
                 </div>
               </div>
 
-              {/* Status Message */}
               {message && (
-                <div className={`mb-6 p-4 rounded-xl flex items-center space-x-3 ${
-                  message.includes('⚠️') ? 'bg-orange-50 border border-orange-200' :
-                  message.includes('✅') ? 'bg-green-50 border border-green-200' :
-                  'bg-blue-50 border border-blue-200'
-                }`}>
-                  <AlertCircle className={`h-5 w-5 ${
-                    message.includes('⚠️') ? 'text-orange-600' :
-                    message.includes('✅') ? 'text-green-600' :
-                    'text-blue-600'
-                  }`} />
+                <div
+                  className={`mb-6 p-4 rounded-xl flex items-center space-x-3 ${
+                    message.includes('⚠️')
+                      ? 'bg-orange-50 border border-orange-200'
+                      : message.includes('✅')
+                      ? 'bg-green-50 border border-green-200'
+                      : 'bg-blue-50 border border-blue-200'
+                  }`}
+                >
+                  <AlertCircle
+                    className={`h-5 w-5 ${
+                      message.includes('⚠️')
+                        ? 'text-orange-600'
+                        : message.includes('✅')
+                        ? 'text-green-600'
+                        : 'text-blue-600'
+                    }`}
+                  />
                   <p className="text-sm font-medium text-gray-700">{message}</p>
                 </div>
               )}
 
-              {/* Submit Button */}
               <button
                 onClick={handleSubmitVote}
                 disabled={!faceVerified || !fingerprintVerified || aadhaar.length !== 12}
@@ -271,7 +315,6 @@ const VerifyIdentityVote = () => {
                 <span>Submit Vote Securely</span>
               </button>
 
-              {/* Info Banner */}
               <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-100">
                 <p className="text-sm text-gray-600 text-center flex items-center justify-center space-x-2">
                   <Shield className="h-4 w-4 text-blue-600" />
@@ -289,11 +332,11 @@ const VerifyIdentityVote = () => {
               <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-2xl shadow-green-500/30 animate-bounce">
                 <CheckCircle className="h-14 w-14 text-white" />
               </div>
-              
+
               <h2 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-4">
                 Vote Successfully Recorded!
               </h2>
-              
+
               <p className="text-lg text-gray-600 mb-6">{message}</p>
 
               <div className="mb-8 p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border border-green-200">
