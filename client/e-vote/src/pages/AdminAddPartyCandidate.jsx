@@ -77,8 +77,6 @@ const AdminAddPartyCandidate = () => {
             Add Party
           </button>
         </form>
-
-        {/* Display Parties */}
         {parties.length > 0 && (
           <div className="mt-6">
             <h3 className="font-semibold mb-2">Existing Parties:</h3>

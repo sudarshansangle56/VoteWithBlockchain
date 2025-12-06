@@ -33,7 +33,7 @@ const StatCard = ({ icon, title, value, color, subtitle }) => {
   );
 };
 
-// Modern info row with icons
+
 const ModernInfoRow = ({ icon, label, value, verified }) => (
   <div className="flex items-center justify-between py-4 px-4 rounded-xl hover:bg-gray-50 transition-colors group">
     <div className="flex items-center space-x-3">
@@ -49,7 +49,6 @@ const ModernInfoRow = ({ icon, label, value, verified }) => (
   </div>
 );
 
-// Modern action button
 const ActionButton = ({ icon, text, onClick, variant = "primary", disabled }) => {
   const variants = {
     primary: "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg shadow-blue-500/30",
@@ -73,7 +72,6 @@ const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Fetch voter details from backend
   useEffect(() => {
     const fetchVoterData = async () => {
       try {
@@ -94,7 +92,7 @@ const Dashboard = () => {
         setUser({
           name: res.data.name,
           aadhaar: res.data.aadhaar,
-          hasVoted: false, // you can replace with real voting logic
+          hasVoted: false, 
           voterId: res.data._id,
           biometricVerified: res.data.biometricStatus === "verified",
         });
@@ -131,7 +129,6 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
             Voter Dashboard
@@ -142,7 +139,7 @@ const Dashboard = () => {
           </p>
         </div>
 
-        {/* Stats Grid */}
+   
         <div className="grid md:grid-cols-4 gap-6 mb-8">
           <StatCard
             icon={<Vote className="h-full w-full text-white" />}
@@ -175,7 +172,6 @@ const Dashboard = () => {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Voter Information Card */}
           <div className="lg:col-span-2">
             <GlassCard className="p-8">
               <div className="flex items-center space-x-3 mb-6">
@@ -218,7 +214,7 @@ const Dashboard = () => {
                 />
               </div>
 
-              {/* Security Badge */}
+          
               <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
                 <div className="flex items-center space-x-3">
                   <Lock className="h-6 w-6 text-green-600" />

@@ -5,9 +5,6 @@ import Voter from "../models/voterModel.js";
 
 const router = express.Router();
 
-/**
- * ✅ Register Voter (Biometric Optional)
- */
 router.post("/register", async (req, res) => {
   try {
     const {
@@ -21,7 +18,7 @@ router.post("/register", async (req, res) => {
       fingerprintId,
     } = req.body;
 
-    // Check existing voter
+
     const voterExists = await Voter.findOne({ aadhaar });
     if (voterExists) {
       return res
@@ -32,7 +29,6 @@ router.post("/register", async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create voter (even if fingerprint missing)
     const newVoter = await Voter.create({
       name,
       aadhaar,
@@ -45,7 +41,7 @@ router.post("/register", async (req, res) => {
       biometricStatus: fingerprintId ? "partial" : "not_verified",
     });
 
-    // Generate JWT token
+    
     const token = jwt.sign(
       { id: newVoter._id, aadhaar: newVoter.aadhaar },
       process.env.JWT_SECRET,
@@ -69,9 +65,6 @@ router.post("/register", async (req, res) => {
   }
 });
 
-/**
- * ✅ Login Voter
- */
 router.post("/login", async (req, res) => {
   try {
     const { aadhaar, password } = req.body;
@@ -109,9 +102,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-/**
- * ✅ Protected Route Example
- */
+
 router.get("/dashboard", verifyToken, async (req, res) => {
   try {
     const voter = await Voter.findById(req.user.id).select("-password");
@@ -121,9 +112,7 @@ router.get("/dashboard", verifyToken, async (req, res) => {
   }
 });
 
-/**
- * ✅ Middleware for Token Verification
- */
+
 function verifyToken(req, res, next) {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json({ message: "Access Denied" });

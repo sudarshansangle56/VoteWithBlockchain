@@ -17,7 +17,7 @@ const VerifyIdentityVote = () => {
   const [candidates, setCandidates] = useState([]);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [aadhaar, setAadhaar] = useState('');
-  const [step, setStep] = useState('select'); // select, verify, success
+  const [step, setStep] = useState('select'); 
   const [faceVerified, setFaceVerified] = useState(false);
   const [fingerprintVerified, setFingerprintVerified] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
@@ -30,7 +30,7 @@ const VerifyIdentityVote = () => {
         setCandidates(res.data);
       } catch (err) {
         console.error('Error fetching candidates:', err);
-        setMessage('⚠️ Failed to load candidates. Please try again later.');
+        setMessage(' Failed to load candidates. Please try again later.');
       }
     };
     fetchCandidates();
@@ -69,18 +69,17 @@ const VerifyIdentityVote = () => {
 
     try {
       setMessage('Submitting your vote to blockchain...');
-      // Example: Update candidate vote count (optional future step)
       await axios.put(`http://localhost:5000/api/candidates/${selectedCandidate._id}`, {
         votes: selectedCandidate.votes + 1,
       });
 
       setTimeout(() => {
         setStep('success');
-        setMessage('✅ Your vote has been securely recorded on the blockchain!');
+        setMessage(' Your vote has been securely recorded on the blockchain!');
       }, 2000);
     } catch (error) {
       console.error('Error submitting vote:', error);
-      setMessage('⚠️ Failed to record vote. Try again.');
+      setMessage(' Failed to record vote. Try again.');
     }
   };
 
@@ -95,14 +94,13 @@ const VerifyIdentityVote = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-12 px-4">
-      {/* Animated Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-blob"></div>
         <div className="absolute top-40 right-10 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-blob animation-delay-2000"></div>
       </div>
 
       <div className="max-w-7xl mx-auto relative">
-        {/* Header */}
+      
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 mb-4 shadow-lg">
             <Vote className="h-8 w-8 text-white" />
@@ -194,7 +192,6 @@ const VerifyIdentityVote = () => {
 
               {/* Face and Fingerprint Verification */}
               <div className="grid md:grid-cols-2 gap-6 mb-8">
-                {/* Face */}
                 <div
                   className={`p-6 rounded-2xl border-2 ${
                     faceVerified ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-gray-50'
